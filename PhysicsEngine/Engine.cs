@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Timers;
 
@@ -6,7 +7,7 @@ class Engine
     DateTime last_frame;
     public int framerate;
     public System.Timers.Timer frameTimer;
-    private List<PhysicsElement> physicsElements;
+    private List<PhysicsObject> physicsObjects;
 
     public Engine(int framerate)
     {
@@ -18,10 +19,10 @@ class Engine
         frameTimer.AutoReset = true;
         frameTimer.Stop();
 
-        this.physicsElements = [];
+        this.physicsObjects = [];
     }
 
-    public Engine(int framerate, List<PhysicsElement> physicsElements)
+    public Engine(int framerate, List<PhysicsObject> physicsElements)
     {
         this.framerate = framerate;
 
@@ -31,7 +32,7 @@ class Engine
         frameTimer.AutoReset = true;
         frameTimer.Stop();
 
-        this.physicsElements = physicsElements;
+        this.physicsObjects = physicsElements;
     }
 
     public void Start()
@@ -45,6 +46,14 @@ class Engine
         frameTimer.Stop();
     }
 
+    public void Initialise()
+    {
+        foreach (PhysicsObject physicsObject in physicsObjects)
+        {
+            physicsObject.Initialise();
+        }
+    }
+
     public void FrameUpdate(object? sender, ElapsedEventArgs e)
     {
         DateTime time = DateTime.Now;
@@ -52,25 +61,31 @@ class Engine
         last_frame = time;
 
         // Update Forces
-        foreach (PhysicsElement physics_object in physicsElements)
+        foreach (PhysicsObject element in physicsObjects)
         {
-            var iUpdateForces = physics_object as IUpdateForces;
-            if (iUpdateForces is not null)
+            foreach (Module module in element.modules)
             {
-                iUpdateForces.UpdateForce(deltaTime);
+                var iUpdateForces = module as IUpdateForces;
+                if (iUpdateForces is not null)
+                {
+                    iUpdateForces.UpdateForce(deltaTime);
+                }
             }
         }
 
         // Update Positions
-        foreach (PhysicsElement physics_object in physicsElements)
+        foreach (PhysicsObject element in physicsObjects)
         {
-            var iUpdatePosition = physics_object as IUpdatePosition;
-            if (iUpdatePosition is not null)
+            foreach (Module module in element.modules)
             {
-                iUpdatePosition.UpdatePosition(deltaTime);
+                var iUpdatePosition = module as IUpdatePosition;
+                if (iUpdatePosition is not null)
+                {
+                    iUpdatePosition.UpdatePosition(deltaTime);
+                }
             }
         }
 
-        Console.WriteLine(((PhysicsObject) physicsElements[0]).position);
+        Console.WriteLine(((PhysicsObject) physicsObjects[0]).position);
     }
 }

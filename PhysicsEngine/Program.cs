@@ -3,18 +3,20 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.WebEncoders.Testing;
 using System.Timers;
 
-PhysicsObject object1 = new(new Vector3(0, 0, 0), 1, new Vector3(-1, 0, 0));
-ConstantForce force1 = new(object1, new Vector3(2f, 0, 0));
+ConstantForce force = new(new Vector3(2f, 0, 0));
+DynamicBody dynamicBody = new(1);
+PhysicsObject object1 = new(Vector3.Zero, [force, dynamicBody]);
 
-List<PhysicsElement> physicsObjects = [object1, force1];
+List<PhysicsObject> physicsObjects = [object1];
 
 Engine engine = new(60, physicsObjects);
 
+engine.Initialise();
 engine.Start();
 
 Thread.Sleep(4000);
 
-((PhysicsObject) physicsObjects[0]).ApplyImpulse(new Vector3(-10, 0, 0));
+physicsObjects[0].GetModule<DynamicBody>().ApplyImpulse(new Vector3(-10, 0, 0));
 
 while(true)
 {

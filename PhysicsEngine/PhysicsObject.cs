@@ -1,42 +1,45 @@
+
 using System.Numerics;
+using System.Reflection;
 
-class PhysicsObject : PhysicsElement, IUpdatePosition
+class PhysicsObject
 {
+    public List<Module> modules;
     public Vector3 position;
-    public Vector3 velocity;
-    public Vector3 acceleration;
-    public float mass;
 
-    public PhysicsObject(Vector3 position, float mass)
+    public PhysicsObject(Vector3 position, List<Module> modules)
     {
         this.position = position;
-        this.velocity = Vector3.Zero;
-        this.mass = mass;
-        this.acceleration = Vector3.Zero;
+        this.modules = modules;
     }
 
-    public PhysicsObject(Vector3 position, float mass, Vector3 velocity)
+    public PhysicsObject(Vector3 position)
     {
         this.position = position;
-        this.velocity = velocity;
-        this.mass = mass;
-        this.acceleration = Vector3.Zero;
+        this.modules = [];
     }
 
-    public void ApplyForce(Vector3 force)
+    public PhysicsObject()
     {
-        acceleration += force / mass;
+        this.position = Vector3.Zero;
+        this.modules = [];
     }
 
-    public void ApplyImpulse(Vector3 impulse)
+    public void Initialise()
     {
-        velocity += impulse / mass;
+        foreach (Module module in modules)
+        {
+            module.Initialise(this);
+        }
     }
 
-    public void UpdatePosition(float deltaTime)
+    public T? GetModule<T>() where T : Module
     {
-        velocity += acceleration * deltaTime;
-        position += velocity * deltaTime;
-        acceleration = new Vector3(0, 0, 0); // Reset acceleration after each update
+        return (T?) modules.Find(module => module is T);
+    }
+
+    public void AddModule(Module module)
+    {
+        modules.Add(module);
     }
 }

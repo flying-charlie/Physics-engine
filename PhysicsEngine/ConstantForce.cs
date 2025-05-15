@@ -1,20 +1,30 @@
 
+using System.Dynamic;
 using System.Numerics;
 using System.Runtime;
 
-class ConstantForce : PhysicsElement, IUpdateForces
+class ConstantForce : Module, IUpdateForces
 {
-    public PhysicsObject target;
     public Vector3 force;
+    public DynamicBody? dynamicBody;
 
-    public ConstantForce(PhysicsObject target, Vector3 force)
+    protected override void Initialise()
     {
-        this.target = target;
+        dynamicBody = physicsObject.GetModule<DynamicBody>();
+
+        if (dynamicBody is null)
+        {
+            throw new ModuleMissingException("Constant force module requires a dynamic body module.");
+        }
+    }
+
+    public ConstantForce(Vector3 force)
+    {
         this.force = force;
     }
 
     public void UpdateForce(float deltaTime)
     {
-        target.ApplyForce(force);
+        dynamicBody.ApplyForce(force);
     }
 }
